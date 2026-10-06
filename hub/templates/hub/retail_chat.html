@@ -1,0 +1,81 @@
+{% extends 'hub/base.html' %}
+
+{% block content %}
+<!-- --- NEW PAGE HEADER --- -->
+<!-- This header now includes the "Back to Files" button -->
+<div class="pb-3 border-bottom mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h2 mb-0">Retail Chat Bot</h1>
+        <h2 class="h5 text-body-secondary mb-0">File: {{ file.file.name|cut:"retail_uploads/" }}</h2>
+    </div>
+    <div>
+        <a href="{% url 'retail_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle me-1"></i>
+            Back to Files
+        </a>
+    </div>
+</div>
+<!-- --- END NEW HEADER --- -->
+
+
+<!-- Chat Window -->
+<div class="card" style="height: 60vh;">
+    <!-- ADDED id="chat-window" -->
+    <div id="chat-window" class="card-body d-flex flex-column" style="overflow-y: auto;">
+        <!-- Chat History -->
+        <div class="flex-grow-1">
+            {% for message in chat_history %}
+                {% if message.is_from_user %}
+                    <!-- User Message (unchanged) -->
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="p-3 rounded" style="background-color: var(--bs-primary); max-width: 70%;">
+                            {{ message.message }}
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- AI Message -->
+                    <div class="d-flex justify-content-start mb-3">
+                        <div class="p-3 rounded" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-border-color); max-width: 70%;">
+                            <!-- REMOVED <pre> tag and added a div with 'white-space: pre-wrap' -->
+                            <div style="white-space: pre-wrap;">{{ message.response }}</div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <div class="text-center text-body-secondary">
+                    <p>This is the start of your chat. Ask a question about your data!</p>
+                    {% if file.schema_json %}
+                        <p class="fs-6"><strong>Detected Columns:</strong> {{ file.schema_json.keys|join:", " }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Chat Input Form (unchanged) -->
+<form method="POST" class="mt-4">
+    {% csrf_token %}
+    <div class="input-group">
+        <input type="text" name="message" class="form-control form-control-lg" placeholder="Ask a question about your data..." required>
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-send-fill"></i> Send
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+
+<!-- ADDED new script block for auto-scrolling -->
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Find the chat window
+        var chatWindow = document.getElementById('chat-window');
+        if (chatWindow) {
+            // Scroll it to the very bottom
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}

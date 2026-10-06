@@ -1,0 +1,1 @@
+{ "builds": [{ "src": "core/wsgi.py", "use": "@vercel/python", "config": { "maxDuration": 60 } }], "routes": [ { "src": "/(.*)", "dest": "core/wsgi.py" } ] }

@@ -1,0 +1,23 @@
+# This tells Git to ignore our secrets, our environment, and our data.
+
+# 1. Ignore the secret .env file
+.env
+
+# 2. Ignore the entire virtual environment
+venv/
+
+# 3. Ignore the local SQLite database
+db.sqlite3
+*.sqlite3
+
+# 4. Ignore all user-uploaded files
+# (The 'media' folder and all its contents)
+media/
+
+# 5. Ignore Python cache files
+__pycache__/
+*.pyc
+
+# 6. Ignore VS Code and OS-specific files
+.vscode/
+.DS_Store

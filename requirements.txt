@@ -1,0 +1,12 @@
+
+Django<5.0
+google-generativeai
+pandas
+statsmodels
+gunicorn
+psycopg2-binary
+python-dotenv
+whitenoise
+openpyxl
+dj-database-url
+pymupdf

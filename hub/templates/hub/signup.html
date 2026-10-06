@@ -1,0 +1,55 @@
+{% extends 'hub/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-body p-5">
+                <h2 class="card-title text-center mb-4">Create Your Account</h2>
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- This renders all form errors at the top -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Loop through fields to create standard labels -->
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            <!-- This adds the 'form-control' class to each field -->
+                            {{ field }}
+                        </div>
+                        <!-- This shows errors for each specific field -->
+                        {% for error in field.errors %}
+                            <div class="alert alert-danger py-1" role="alert">{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg mt-3">Sign Up</button>
+                    </div>
+                </form>
+                <p class="text-center mt-4">
+                    Already have an account? <a href="{% url 'login' %}" class="link-light">Log In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- This little script adds the 'form-control' class to the form fields -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var formFields = document.querySelectorAll('form input[type="text"], form input[type="password"]');
+        formFields.forEach(function(field) {
+            field.classList.add('form-control');
+        });
+    });
+</script>
+{% endblock %}

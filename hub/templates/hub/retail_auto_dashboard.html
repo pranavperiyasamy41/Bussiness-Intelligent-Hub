@@ -1,0 +1,148 @@
+{% extends 'hub/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- --- PAGE HEADER (THIS IS THE FIX) --- -->
+<div class="pb-3 border-bottom mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h2 mb-0">AI-Generated Dashboard</h1>
+        <h2 class="h5 text-body-secondary mb-0">File: {{ file.file.name|cut:"retail_uploads/" }}</h2>
+    </div>
+    <div class="d-flex align-items-center">
+        <!-- --- THIS BUTTON IS UPDATED --- -->
+        <!-- It now points to 'retail_dashboard' (the file list) -->
+        <a href="{% url 'retail_dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left-circle me-1"></i>
+            Back to Files
+        </a>
+        <!-- --- END OF UPDATE --- -->
+        
+        <!-- Simulation Button (Unchanged) -->
+        <a href="{% url 'retail_forecast' file.id %}" class="btn btn-success">
+            <i class="bi bi-graph-up-arrow me-1"></i>
+            Run Simulation
+        </a>
+    </div>
+</div>
+<!-- --- END HEADER --- -->
+
+<!-- --- REMAINDER OF FILE IS UNCHANGED --- -->
+{% if error %}
+    <div class="alert alert-danger">
+        <strong>Error:</strong> {{ error }}
+    </div>
+{% elif chart_data_for_template %}
+    <div class="row" id="dashboard-grid">
+        <!-- JavaScript will add charts here -->
+    </div>
+    
+    {{ chart_data_for_template|json_script:"chart-data" }}
+{% else %}
+    <div class="alert alert-warning">
+        Loading dashboard... if this takes more than 30 seconds, please go back and try again.
+    </div>
+{% endif %}
+<!-- --- END NEW, SAFER LOGIC --- -->
+
+{% endblock %}
+
+
+<!-- --- UPDATED SCRIPT BLOCK (Unchanged) --- -->
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        const chartDataElement = document.getElementById('chart-data');
+        if (!chartDataElement) {
+            console.log("No chart data element found. (This is normal if there was an error).");
+            return;
+        }
+        
+        let chartData;
+        try {
+            chartData = JSON.parse(chartDataElement.textContent);
+        } catch (e) {
+            console.error("Failed to parse chart data:", e);
+            document.getElementById('dashboard-grid').innerHTML = 
+                '<div class="col-12"><div class="alert alert-danger">Failed to parse dashboard data.</div></div>';
+            return;
+        }
+
+        const dashboardGrid = document.getElementById('dashboard-grid');
+        if (!dashboardGrid) return;
+        
+        const chartColors = [
+            'rgba(124, 58, 237, 0.7)', // Primary (Violet)
+            'rgba(75, 192, 192, 0.7)', // Green
+            'rgba(255, 99, 132, 0.7)', // Red
+            'rgba(255, 205, 86, 0.7)', // Yellow
+            'rgba(54, 162, 235, 0.7)', // Blue
+            'rgba(255, 159, 64, 0.7)', // Orange
+            'rgba(153, 102, 255, 0.7)', // Purple
+        ];
+        
+        Chart.defaults.color = '#e0e7ff'; 
+
+        chartData.forEach((chart, index) => {
+            
+            const col = document.createElement('div');
+            col.className = 'col-lg-6 mb-4';
+
+            const card = document.createElement('div');
+            card.className = 'card h-100';
+            
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body d-flex flex-column';
+            
+            const title = document.createElement('h5');
+            title.className = 'card-title';
+            title.innerText = chart.title;
+            cardBody.appendChild(title);
+            
+            const canvasContainer = document.createElement('div');
+            canvasContainer.className = 'flex-grow-1';
+            canvasContainer.style.minHeight = '300px';
+            
+            const canvas = document.createElement('canvas');
+            const canvasId = `chart-${index}`;
+            canvas.id = canvasId;
+            canvasContainer.appendChild(canvas);
+            
+            cardBody.appendChild(canvasContainer);
+            card.appendChild(cardBody);
+            col.appendChild(card);
+            dashboardGrid.appendChild(col);
+            
+            if (chart.chart_type === 'error') {
+                cardBody.innerHTML += `<div class="alert alert-danger">Failed to load chart: ${chart.error_message}</div>`;
+                return;
+            }
+            
+            new Chart(document.getElementById(canvasId), {
+                type: chart.chart_type, 
+                data: {
+                    labels: chart.labels,
+                    datasets: [{
+                        label: chart.title,
+                        data: chart.values,
+                        backgroundColor: (chart.chart_type === 'pie' || chart.chart_type === 'doughnut') ? chartColors : chartColors[0],
+                        borderColor: (chart.chart_type === 'line') ? chartColors[0] : '#0c0a18',
+                        borderWidth: 2,
+                        fill: (chart.chart_type === 'line')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: (chart.chart_type === 'pie' || chart.chart_type === 'doughnut'), 
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

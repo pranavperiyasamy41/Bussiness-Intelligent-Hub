@@ -1,0 +1,168 @@
+{% extends 'hub/base.html' %}
+
+{% block content %}
+<div class="pb-3 border-bottom mb-4">
+    <h1 class="h2">Analysis Result</h1>
+    <h2 class="h5 text-body-secondary">File: {{ file.file.name|cut:"uploads/" }}</h2>
+</div>
+
+{% if result and result.result_json %}
+    {% with data=result.result_json %}
+    
+    <!-- Check for error key -->
+    {% if data.error %}
+        <div class="alert alert-danger">
+            <strong>Analysis Failed:</strong> {{ data.error }}
+        </div>
+    {% else %}
+        
+        <div class="row">
+            
+            <!-- LEFT COLUMN (Sentiment & Chart) -->
+            <div class="col-lg-6 mb-4">
+                <!-- Overall Sentiment Card -->
+                <div class="card text-bg-{{ data.sentiment_color|default:'secondary' }} mb-4">
+                    <div class="card-header fs-5">Overall Sentiment</div>
+                    <div class="card-body">
+                        <p class.card-text fs-4">{{ data.overall_sentiment|default:'N/A' }}</p>
+                    </div>
+                </div>
+                
+                <!-- Chart Card -->
+                <div class="card">
+                    <div class="card-header fs-5">
+                        <i class="bi bi-pie-chart-fill me-2"></i>Sentiment Distribution
+                    </div>
+                    <div class="card-body" style="min-height: 350px;">
+                        <canvas id="sentimentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RIGHT COLUMN (Positive & Improvement) -->
+            <div class="col-lg-6 mb-4">
+                
+                <!-- Positive Themes Card -->
+                <!-- 'h-100' has been REMOVED from this card -->
+                <div class="card mb-4"> 
+                    <div class="card-header text-bg-success fs-5">
+                        <i class="bi bi-hand-thumbs-up-fill me-2"></i>Key Positive Themes
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for theme in data.positive_themes %}
+                                <li class="list-group-item">{{ theme }}</li>
+                            {% empty %}
+                                <li class="list-group-item">No positive themes identified.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Areas for Improvement Card -->
+                <!-- 'h-100' has been REMOVED from this card -->
+                <div class="card mb-4">
+                    <div class="card-header text-bg-danger fs-5">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Areas for Improvement
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for item in data.areas_for_improvement %}
+                                <li class="list-group-item">{{ item }}</li>
+                            {% empty %}
+                                <li class="list-group-item">No areas for improvement identified.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- End of the main row -->
+
+    {% endif %}
+
+    {% endwith %}
+
+{% elif result %}
+    <!-- Fallback for old text-only results (just in case) -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Analysis Summary (Text)</h5>
+            <div class="p-3 mt-3 rounded" style="background-color: #0a0c1e; white-space: pre-wrap; font-family: monospace; border: 1px solid #333;">{{ result.result_text }}</div>
+        </div>
+    </div>
+{% else %}
+    <!-- Result not ready yet -->
+    <div class="card text-center">
+        <div class="card-body">
+            <h5 class="card-title">Analysis in Progress...</h5>
+            <p>Your results are being generated. Please refresh this page in a moment.</p>
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+    <!-- Meta refresh to reload the page after 5 seconds -->
+    <meta http-equiv="refresh" content="5">
+{% endif %}
+
+<div class="mt-1"> 
+    <a href="{% url 'feedback' %}" class="btn btn-outline-secondary">Upload Another File</a>
+</div>
+{% endblock %}
+
+
+<!-- --- SCRIPT BLOCK (Unchanged, but required) --- -->
+{% block scripts %}
+<script>
+    // Wait for the page to be fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+        // Find the canvas element
+        var ctx = document.getElementById('sentimentChart');
+        if (!ctx) {
+            return; // Exit if the canvas isn't on the page
+        }
+
+        // Get the data from our Django template
+        var chartData = {{ result.result_json.sentiment_distribution | default:'{}' | safe }};
+        
+        // Check if data is available
+        if (chartData.positive !== undefined) {
+            
+            Chart.defaults.color = '#e0e7ff'; 
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Positive', 'Negative', 'Neutral'],
+                    datasets: [{
+                        label: 'Sentiment',
+                        data: [chartData.positive, chartData.negative, chartData.neutral],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.7)', // Green
+                            'rgba(255, 99, 132, 0.7)', // Red
+                            'rgba(201, 203, 207, 0.7)' // Grey
+                        ],
+                        borderColor: [
+                            '#0c0a18' 
+                        ],
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e0e7ff' // Legend text color
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

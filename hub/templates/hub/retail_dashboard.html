@@ -1,0 +1,77 @@
+{% extends 'hub/base.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- Upload Column (unchanged) -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="card-title fs-4">Retail Insight Engine</h2>
+                <p class="card-subtitle mb-3 text-body-secondary">Upload a .csv or .xlsx sales file to begin.</p>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Manually render the file input field -->
+                    <div class="mb-3">
+                        <label for="{{ form.file.id_for_label }}" class="form-label">Select file</label>
+                        {{ form.file }}
+                        {% for error in form.file.errors %}
+                            <div class="alert alert-danger py-1 mt-2" role="alert">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg mt-3">Upload & Start Chat</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- File List Column -->
+    <div class="col-lg-8 mb-4">
+        <h3 class="mb-3">Your Retail Files</h3>
+        <div class="list-group">
+            {% for file in retail_files %}
+                <!-- This is the updated list item with all 3 buttons -->
+                <div class="list-group-item d-flex flex-wrap justify-content-between align-items-center p-3" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-border-color); border-radius: .5rem; margin-bottom: 1rem;">
+                    <!-- File Info (left side) -->
+                    <div class="mb-2 mb-md-0">
+                        <h5 class="mb-1">{{ file.file.name|cut:"retail_uploads/" }}</h5>
+                        <small class="text-body-secondary">Uploaded on: {{ file.uploaded_at|date:"M d, Y" }}</small>
+                    </div>
+                    
+                    <!-- --- THIS IS THE UPDATED BUTTON GROUP --- -->
+                    <div class="d-flex align-items-center flex-wrap">
+                        <a href="{% url 'retail_chat' file.id %}" class="btn btn-outline-secondary btn-sm me-2 mb-1 mb-md-0">
+                            <i class="bi bi-chat-dots-fill me-1"></i> Chat
+                        </a>
+                        <a href="{% url 'retail_auto_dashboard' file.id %}" class="btn btn-primary btn-sm me-2 mb-1 mb-md-0">
+                            <i class="bi bi-bar-chart-fill me-1"></i> Dashboard
+                        </a>
+                        
+                        <!-- --- NEW SIMULATION BUTTON --- -->
+                        <a href="{% url 'retail_forecast' file.id %}" class="btn btn-success btn-sm me-2 mb-1 mb-md-0">
+                            <i class="bi bi-graph-up-arrow me-1"></i> Simulation
+                        </a>
+                        <!-- --- END NEW SIMULATION BUTTON --- -->
+                        
+                        <form action="{% url 'retail_delete' file.id %}" method="POST" class="d-inline mb-1 mb-md-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this file? This will also delete all chat history.');">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <!-- --- END UPDATED BUTTON GROUP --- -->
+                </div>
+            {% empty %}
+                <div class="list-group-item">
+                    <p class="mb-0 text-body-secondary">You haven't uploaded any retail files yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

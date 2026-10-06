@@ -1,0 +1,53 @@
+{% extends 'hub/base.html' %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="display-4 fw-bold">Welcome to the BI Hub <i class="bi bi-robot"></i></h1>
+    <p class="lead text-body-secondary">Your unified platform for business intelligence.</p>
+</div>
+
+<!-- Add some custom CSS for the hover effect -->
+<style>
+    .card-hover {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(var(--bs-primary-rgb), 0.25) !important;
+    }
+    a.text-decoration-none .card-body h3 {
+        color: var(--bs-body-color);
+        transition: color 0.2s ease-in-out;
+    }
+    a.text-decoration-none:hover .card-body h3 {
+        color: var(--bs-primary-text-emphasis);
+    }
+</style>
+
+<div class="row mt-5 justify-content-center">
+    <!-- Feature 1: Customer Feedback -->
+    <div class="col-md-5 mb-4">
+        <a href="{% url 'feedback' %}" class="text-decoration-none">
+            <div class="card h-100 p-4 text-center text-decoration-none card-hover">
+                <div class="card-body">
+                    <i class="bi bi-chat-quote-fill fs-1 text-primary"></i>
+                    <h3 class="mt-3">Analyze Customer Feedback</h3>
+                    <p class="text-body-secondary">Upload PDF, CSV, or Excel files to get AI-powered sentiment analysis and dashboards.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Feature 2: Retail Insights -->
+    <div class="col-md-5 mb-4">
+        <!-- THIS LINK IS NOW CORRECT -->
+        <a href="{% url 'retail_dashboard' %}" class="text-decoration-none"> 
+            <div class="card h-100 p-4 text-center text-decoration-none card-hover">
+                <i class="bi bi-bar-chart-line-fill fs-1 text-primary"></i>
+                <h3 class="mt-3">Retail Insight Engine</h3>
+                <p class="text-body-secondary">Chat with your sales data and generate AI-powered dashboards.</p>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
