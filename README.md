@@ -125,4 +125,4 @@ This is a multi-featured engine for analyzing structured (tabular) sales data.
 ## 👤 Author
 
 * **PranavP**
-* [GitHub: @Harinee-3010](https://github.com/pranavperiyasamy41)
+* [GitHub: @pranavperiyasamy41](https://github.com/pranavperiyasamy41)
